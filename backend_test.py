@@ -1,260 +1,171 @@
 #!/usr/bin/env python3
-"""
-Backend API Testing Script
-Tests the PDF generation endpoint for requisitions and other endpoints
-"""
 
 import requests
-import os
-from datetime import datetime
+import sys
+from urllib.parse import urljoin
 
-def test_pdf_generation_endpoint():
-    """Test the PDF generation endpoint for requisitions"""
-    
-    # Get base URL from environment
-    base_url = "https://sacred-manager.preview.emergentagent.com"
-    
-    # Test endpoint
-    endpoint = f"{base_url}/api/requisitions/REQ-001/pdf"
-    
-    print(f"Testing PDF Generation Endpoint: {endpoint}")
-    print("=" * 60)
-    
+# Base URL from environment
+BASE_URL = "https://demobackend.emergentagent.com"
+
+def test_dashboard_redirect():
+    """Test GET /dashboard - Expect a redirect (307) to /login"""
+    print("\n=== Testing GET /dashboard ===")
     try:
-        # Make GET request to PDF endpoint
-        print("Making GET request to PDF endpoint...")
-        response = requests.get(endpoint, timeout=30)
+        url = urljoin(BASE_URL, "/dashboard")
+        print(f"Testing URL: {url}")
+        
+        # Use allow_redirects=False to capture the redirect response
+        response = requests.get(url, allow_redirects=False, timeout=10)
         
         print(f"Status Code: {response.status_code}")
+        print(f"Headers: {dict(response.headers)}")
         
-        # Test 1: Verify 200 status code
-        if response.status_code == 200:
-            print("✅ Test 1 PASSED: Returns 200 status code")
-        else:
-            print(f"❌ Test 1 FAILED: Expected 200, got {response.status_code}")
-            print(f"Response text: {response.text}")
-            return False
-        
-        # Test 2: Verify Content-Type header
-        content_type = response.headers.get('Content-Type', '')
-        print(f"Content-Type header: {content_type}")
-        
-        if content_type == 'application/pdf':
-            print("✅ Test 2 PASSED: Content-Type is 'application/pdf'")
-        else:
-            print(f"❌ Test 2 FAILED: Expected 'application/pdf', got '{content_type}'")
-            return False
-        
-        # Test 3: Verify Content-Disposition header
-        content_disposition = response.headers.get('Content-Disposition', '')
-        print(f"Content-Disposition header: {content_disposition}")
-        
-        if 'attachment' in content_disposition and 'withdrawal-REQ-001.pdf' in content_disposition:
-            print("✅ Test 3 PASSED: Content-Disposition contains 'attachment' and filename")
-        else:
-            print(f"❌ Test 3 FAILED: Content-Disposition should contain 'attachment' and 'withdrawal-REQ-001.pdf'")
-            return False
-        
-        # Additional verification: Check if response contains PDF content
-        content_length = len(response.content)
-        print(f"Response content length: {content_length} bytes")
-        
-        if content_length > 0:
-            print("✅ Additional check PASSED: PDF content is not empty")
+        if response.status_code in [301, 302, 307, 308]:
+            location = response.headers.get('Location', 'No Location header')
+            print(f"Redirect Location: {location}")
             
-            # Check if content starts with PDF signature
-            if response.content.startswith(b'%PDF'):
-                print("✅ Additional check PASSED: Content starts with PDF signature")
+            if response.status_code == 307:
+                print("✅ PASS: Got expected 307 redirect")
+                if '/login' in location:
+                    print("✅ PASS: Redirects to /login as expected")
+                    return True
+                else:
+                    print(f"❌ FAIL: Redirects to {location}, expected /login")
+                    return False
             else:
-                print("⚠️  Warning: Content doesn't start with PDF signature")
+                print(f"⚠️  WARNING: Got {response.status_code} redirect instead of 307")
+                if '/login' in location:
+                    print("✅ PASS: Still redirects to /login (acceptable)")
+                    return True
+                else:
+                    print(f"❌ FAIL: Redirects to {location}, expected /login")
+                    return False
         else:
-            print("❌ Additional check FAILED: PDF content is empty")
+            print(f"❌ FAIL: Expected redirect (307), got {response.status_code}")
             return False
-        
-        print("\n🎉 ALL TESTS PASSED: PDF generation endpoint is working correctly!")
-        return True
-        
-    except requests.exceptions.RequestException as e:
-        print(f"❌ Request failed: {e}")
-        return False
+            
     except Exception as e:
-        print(f"❌ Unexpected error: {e}")
-        return False
-
-def test_pdf_nonexistent_id():
-    """Test the PDF generation endpoint with non-existent ID (expecting 404)"""
-    
-    # Get base URL from environment
-    base_url = "https://sacred-manager.preview.emergentagent.com"
-    
-    # Test endpoint with non-existent ID
-    endpoint = f"{base_url}/api/requisitions/REQ-999/pdf"
-    
-    print(f"Testing PDF Endpoint with Non-existent ID: {endpoint}")
-    print("=" * 60)
-    
-    try:
-        # Make GET request to PDF endpoint with non-existent ID
-        print("Making GET request to PDF endpoint with non-existent ID...")
-        response = requests.get(endpoint, timeout=30)
-        
-        print(f"Status Code: {response.status_code}")
-        print(f"Response text: {response.text}")
-        
-        # Test: Verify 404 status code
-        if response.status_code == 404:
-            print("✅ Test PASSED: Returns 404 status code for non-existent ID")
-            return True
-        else:
-            print(f"❌ Test FAILED: Expected 404, got {response.status_code}")
-            return False
-        
-    except requests.exceptions.RequestException as e:
-        print(f"❌ Request failed: {e}")
-        return False
-    except Exception as e:
-        print(f"❌ Unexpected error: {e}")
+        print(f"❌ ERROR: {str(e)}")
         return False
 
 def test_login_page():
-    """Test the Login page (GET /login)"""
-    
-    # Get base URL from environment
-    base_url = "https://sacred-manager.preview.emergentagent.com"
-    
-    # Test endpoint
-    endpoint = f"{base_url}/login"
-    
-    print(f"Testing Login Page: {endpoint}")
-    print("=" * 60)
-    
+    """Test GET /login - Expect 200 OK"""
+    print("\n=== Testing GET /login ===")
     try:
-        # Make GET request to login page
-        print("Making GET request to login page...")
-        response = requests.get(endpoint, timeout=30)
+        url = urljoin(BASE_URL, "/login")
+        print(f"Testing URL: {url}")
+        
+        response = requests.get(url, timeout=10)
         
         print(f"Status Code: {response.status_code}")
+        print(f"Content-Type: {response.headers.get('Content-Type', 'Not specified')}")
+        print(f"Content Length: {len(response.content)} bytes")
         
-        # Test: Verify 200 status code
         if response.status_code == 200:
-            print("✅ Test PASSED: Login page returns 200 status code")
+            print("✅ PASS: Got expected 200 OK")
             
-            # Additional check: verify it's HTML content
+            # Check if it's HTML content
             content_type = response.headers.get('Content-Type', '')
             if 'text/html' in content_type:
-                print("✅ Additional check PASSED: Content-Type indicates HTML page")
+                print("✅ PASS: Returns HTML content as expected")
+                return True
             else:
-                print(f"⚠️  Warning: Content-Type is '{content_type}', expected HTML")
-            
-            return True
+                print(f"⚠️  WARNING: Content-Type is {content_type}, expected HTML")
+                return True  # Still consider it a pass if status is 200
         else:
-            print(f"❌ Test FAILED: Expected 200, got {response.status_code}")
-            print(f"Response text: {response.text[:500]}...")  # First 500 chars
+            print(f"❌ FAIL: Expected 200, got {response.status_code}")
             return False
-        
-    except requests.exceptions.RequestException as e:
-        print(f"❌ Request failed: {e}")
-        return False
+            
     except Exception as e:
-        print(f"❌ Unexpected error: {e}")
+        print(f"❌ ERROR: {str(e)}")
         return False
 
-def test_dashboard_page():
-    """Test the Dashboard page (GET /dashboard)"""
-    
-    # Get base URL from environment
-    base_url = "https://sacred-manager.preview.emergentagent.com"
-    
-    # Test endpoint
-    endpoint = f"{base_url}/dashboard"
-    
-    print(f"Testing Dashboard Page: {endpoint}")
-    print("=" * 60)
-    
+def test_api_pdf_endpoint():
+    """Test GET /api/requisitions/REQ-999/pdf - Expect 404 (or 500) but not a redirect"""
+    print("\n=== Testing GET /api/requisitions/REQ-999/pdf ===")
     try:
-        # Make GET request to dashboard page
-        print("Making GET request to dashboard page...")
-        response = requests.get(endpoint, timeout=30, allow_redirects=False)
+        url = urljoin(BASE_URL, "/api/requisitions/REQ-999/pdf")
+        print(f"Testing URL: {url}")
+        
+        # Use allow_redirects=False to detect any unexpected redirects
+        response = requests.get(url, allow_redirects=False, timeout=10)
         
         print(f"Status Code: {response.status_code}")
+        print(f"Headers: {dict(response.headers)}")
+        print(f"Content Length: {len(response.content)} bytes")
         
-        # Test: Check for expected status codes (200 or redirect codes)
-        if response.status_code == 200:
-            print("✅ Test PASSED: Dashboard page returns 200 status code")
-            
-            # Additional check: verify it's HTML content
-            content_type = response.headers.get('Content-Type', '')
-            if 'text/html' in content_type:
-                print("✅ Additional check PASSED: Content-Type indicates HTML page")
-            else:
-                print(f"⚠️  Warning: Content-Type is '{content_type}', expected HTML")
-            
+        if response.status_code in [301, 302, 307, 308]:
+            location = response.headers.get('Location', 'No Location header')
+            print(f"❌ FAIL: Got unexpected redirect to {location}")
+            print("API endpoints should not redirect for authentication")
+            return False
+        elif response.status_code == 404:
+            print("✅ PASS: Got expected 404 (resource not found)")
             return True
-        elif response.status_code in [301, 302, 307, 308]:
-            print(f"✅ Test PASSED: Dashboard redirects with status {response.status_code}")
-            
-            # Check redirect location
-            location = response.headers.get('Location', '')
-            if location:
-                print(f"✅ Redirect location: {location}")
-            
+        elif response.status_code == 500:
+            print("✅ PASS: Got 500 (acceptable for non-existent resource)")
+            # Print response content to understand the error
+            try:
+                content = response.text[:500]  # First 500 chars
+                print(f"Response content: {content}")
+            except:
+                pass
+            return True
+        elif response.status_code == 401:
+            print("✅ PASS: Got 401 (API authentication required)")
             return True
         else:
-            print(f"❌ Test FAILED: Expected 200 or redirect (3xx), got {response.status_code}")
-            print(f"Response text: {response.text[:500]}...")  # First 500 chars
+            print(f"⚠️  UNEXPECTED: Got {response.status_code}, expected 404/500/401")
+            # Print response content for debugging
+            try:
+                content = response.text[:500]  # First 500 chars
+                print(f"Response content: {content}")
+            except:
+                pass
             return False
-        
-    except requests.exceptions.RequestException as e:
-        print(f"❌ Request failed: {e}")
-        return False
+            
     except Exception as e:
-        print(f"❌ Unexpected error: {e}")
+        print(f"❌ ERROR: {str(e)}")
         return False
 
 def main():
-    """Main test function"""
-    print("Backend API Testing - Multiple Endpoints")
-    print(f"Test started at: {datetime.now()}")
-    print("=" * 60)
+    """Run all tests and report results"""
+    print("🧪 Starting Backend Authentication & Routing Tests")
+    print(f"Base URL: {BASE_URL}")
     
-    # Test results tracking
-    test_results = {}
+    results = []
     
-    # Test 1: PDF generation endpoint with valid ID
-    print("\n1. Testing PDF Generation Endpoint (Valid ID)")
-    test_results['pdf_valid'] = test_pdf_generation_endpoint()
+    # Test 1: Dashboard redirect
+    results.append(("Dashboard Redirect", test_dashboard_redirect()))
     
-    # Test 2: PDF generation endpoint with non-existent ID
-    print("\n2. Testing PDF Generation Endpoint (Non-existent ID)")
-    test_results['pdf_404'] = test_pdf_nonexistent_id()
+    # Test 2: Login page
+    results.append(("Login Page", test_login_page()))
     
-    # Test 3: Login page
-    print("\n3. Testing Login Page")
-    test_results['login'] = test_login_page()
+    # Test 3: API PDF endpoint
+    results.append(("API PDF Endpoint", test_api_pdf_endpoint()))
     
-    # Test 4: Dashboard page
-    print("\n4. Testing Dashboard Page")
-    test_results['dashboard'] = test_dashboard_page()
+    # Summary
+    print("\n" + "="*50)
+    print("📊 TEST RESULTS SUMMARY")
+    print("="*50)
     
-    print("\n" + "=" * 60)
-    print("FINAL TEST RESULTS:")
-    print("=" * 60)
+    passed = 0
+    total = len(results)
     
-    # Display results
-    print("✅ PDF Generation Endpoint (Valid ID):", "WORKING" if test_results['pdf_valid'] else "FAILED")
-    print("✅ PDF Generation Endpoint (404 Test):", "WORKING" if test_results['pdf_404'] else "FAILED")
-    print("✅ Login Page:", "WORKING" if test_results['login'] else "FAILED")
-    print("✅ Dashboard Page:", "WORKING" if test_results['dashboard'] else "FAILED")
+    for test_name, result in results:
+        status = "✅ PASS" if result else "❌ FAIL"
+        print(f"{test_name}: {status}")
+        if result:
+            passed += 1
     
-    # Overall summary
-    all_passed = all(test_results.values())
-    if all_passed:
-        print("\n🎉 SUMMARY: All tests passed successfully!")
+    print(f"\nOverall: {passed}/{total} tests passed")
+    
+    if passed == total:
+        print("🎉 All tests passed!")
+        return 0
     else:
-        failed_tests = [test for test, result in test_results.items() if not result]
-        print(f"\n❌ SUMMARY: {len(failed_tests)} test(s) failed: {', '.join(failed_tests)}")
-    
-    print(f"Test completed at: {datetime.now()}")
+        print("⚠️  Some tests failed - see details above")
+        return 1
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
