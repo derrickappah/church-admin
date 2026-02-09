@@ -163,8 +163,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "PDF Generation Endpoint"
-  stuck_tasks: []
+    - "Dashboard Page Routing"
+  stuck_tasks:
+    - "Dashboard Page Routing"
   test_all: false
   test_priority: "high_first"
 
