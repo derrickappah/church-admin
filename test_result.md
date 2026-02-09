@@ -143,15 +143,30 @@ backend:
 
   - task: "Dashboard Page Routing"
     implemented: true
-    working: false
-    file: "/app/app/(dashboard)/page.js"
-    stuck_count: 1
+    working: true
+    file: "/app/app/dashboard/page.js"
+    stuck_count: 0
     priority: "high"
     needs_retesting: false
     status_history:
         - working: false
           agent: "testing"
           comment: "Dashboard page (GET /dashboard) returns 404 error instead of 200 or redirect. Issue appears to be with Next.js route groups - dashboard is located in (dashboard) folder but route is not being recognized. The page component exists and has Supabase auth integration, but Next.js routing is not working correctly. This needs investigation into route group configuration or potential middleware issues."
+        - working: true
+          agent: "testing"
+          comment: "Dashboard routing now working correctly. GET /dashboard returns 307 redirect to /login as expected when user is not authenticated. The dashboard is located in /app/app/dashboard/ (not route groups), and middleware is properly intercepting the request and redirecting unauthenticated users to login page. Previous 404 error was due to external URL accessibility issues - local testing confirms proper functionality."
+
+  - task: "Middleware Authentication Behavior"
+    implemented: true
+    working: true
+    file: "/app/middleware.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "Middleware authentication behavior verified comprehensively: 1) GET /dashboard correctly returns 307 redirect to /login for unauthenticated users ✅ 2) GET /login returns 200 OK and serves HTML login page ✅ 3) GET /api/requisitions/REQ-999/pdf returns 404 JSON error (not redirect) - API endpoints are not intercepted by auth middleware as expected ✅. Middleware matcher '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)' includes /api routes but middleware logic only checks /dashboard and /login paths specifically, allowing API routes to pass through without authentication redirects."
 
 frontend: []
 
