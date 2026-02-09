@@ -117,6 +117,42 @@ backend:
           agent: "testing"
           comment: "PDF generation endpoint tested successfully. All requirements verified: 1) Returns 200 status code ✅ 2) Content-Type header is 'application/pdf' ✅ 3) Content-Disposition header contains 'attachment; filename=withdrawal-REQ-001.pdf' ✅ 4) PDF content is valid (3013 bytes, starts with PDF signature) ✅. Endpoint generates withdrawal forms with hardcoded data and dynamic ID parameter. No database connection required."
 
+  - task: "PDF Endpoint Error Handling"
+    implemented: true
+    working: true
+    file: "/app/app/api/requisitions/[id]/pdf/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "PDF endpoint error handling tested with non-existent ID (REQ-999). Correctly returns 404 status code with error message 'Requisition not found'. Error handling is working as expected when requisition doesn't exist in Supabase database."
+
+  - task: "Login Page"
+    implemented: true
+    working: true
+    file: "/app/app/login/page.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "Login page (GET /login) tested successfully. Returns 200 status code and serves HTML content correctly. Page loads with proper Supabase authentication form including email/password fields and error handling UI."
+
+  - task: "Dashboard Page Routing"
+    implemented: true
+    working: false
+    file: "/app/app/(dashboard)/page.js"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: false
+          agent: "testing"
+          comment: "Dashboard page (GET /dashboard) returns 404 error instead of 200 or redirect. Issue appears to be with Next.js route groups - dashboard is located in (dashboard) folder but route is not being recognized. The page component exists and has Supabase auth integration, but Next.js routing is not working correctly. This needs investigation into route group configuration or potential middleware issues."
+
 frontend: []
 
 metadata:
