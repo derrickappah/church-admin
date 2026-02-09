@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Plus, Search, Filter } from 'lucide-react';
 import Card from '@/components/ui/card';
 import Badge from '@/components/ui/badge';
@@ -72,7 +73,12 @@ export default function RequisitionsPage() {
                   </Badge>
                 </td>
                 <td className="px-6 py-4 text-right">
-                  <button className="text-sm font-medium text-blue-600 hover:text-blue-700">View</button>
+                  <Link 
+                    href={`/dashboard/requisitions/${req.id}`}
+                    className="text-sm font-medium text-blue-600 hover:text-blue-700"
+                  >
+                    View
+                  </Link>
                 </td>
               </tr>
             ))}
