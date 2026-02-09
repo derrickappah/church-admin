@@ -4,8 +4,8 @@ import requests
 import sys
 from urllib.parse import urljoin
 
-# Base URL from environment
-BASE_URL = "https://demobackend.emergentagent.com"
+# Base URL - using localhost since external URL is not accessible
+BASE_URL = "http://localhost:3000"
 
 def test_dashboard_redirect():
     """Test GET /dashboard - Expect a redirect (307) to /login"""
