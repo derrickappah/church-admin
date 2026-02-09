@@ -1,6 +1,7 @@
 import React from 'react';
 import { Page, Text, View, Document, StyleSheet, renderToStream } from '@react-pdf/renderer';
 import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 
 // Create styles
 const styles = StyleSheet.create({
@@ -72,7 +73,7 @@ const styles = StyleSheet.create({
 });
 
 // Create Document Component
-const WithdrawalForm = ({ id, amount, date }) => (
+const WithdrawalForm = ({ id, amount, date, title, payee, department }) => (
   <Document>
     <Page size="A4" style={styles.page}>
       <View style={styles.header}>
@@ -82,8 +83,8 @@ const WithdrawalForm = ({ id, amount, date }) => (
 
       <View style={styles.section}>
         <View style={styles.row}>
-          <Text style={styles.label}>Reference Number:</Text>
-          <Text style={styles.value}>WD-{id}-2025</Text>
+          <Text style={styles.label}>Requisition ID:</Text>
+          <Text style={styles.value}>{id}</Text>
         </View>
         <View style={styles.row}>
           <Text style={styles.label}>Date:</Text>
@@ -91,25 +92,25 @@ const WithdrawalForm = ({ id, amount, date }) => (
         </View>
         <View style={styles.row}>
           <Text style={styles.label}>Amount:</Text>
-          <Text style={styles.value}>${amount}</Text>
+          <Text style={styles.value}>${Number(amount).toFixed(2)}</Text>
         </View>
         <View style={styles.row}>
           <Text style={styles.label}>Payee:</Text>
-          <Text style={styles.value}>Sarah Staff</Text>
+          <Text style={styles.value}>{payee}</Text>
         </View>
         <View style={styles.row}>
           <Text style={styles.label}>Purpose:</Text>
-          <Text style={styles.value}>Office Supplies Restock (Monthly)</Text>
+          <Text style={styles.value}>{title}</Text>
         </View>
         <View style={styles.row}>
           <Text style={styles.label}>Department:</Text>
-          <Text style={styles.value}>Administration</Text>
+          <Text style={styles.value}>{department}</Text>
         </View>
       </View>
 
       <View style={styles.signatureBox}>
         <View>
-          <Text style={styles.signature}>Requested By</Text>
+          <Text style={styles.signature}>Requested By: {payee}</Text>
         </View>
         <View>
           <Text style={styles.signature}>Approved By (President/Manager)</Text>
@@ -124,18 +125,38 @@ const WithdrawalForm = ({ id, amount, date }) => (
 );
 
 export async function GET(req, { params }) {
+  const supabase = await createClient();
+  const { id } = params;
+
+  // Fetch requisition details
+  const { data: requisition, error } = await supabase
+    .from('requisitions')
+    .select(`
+      *,
+      profiles:created_by (full_name)
+    `)
+    .eq('id', id)
+    .single();
+
+  if (error || !requisition) {
+    return NextResponse.json({ error: 'Requisition not found' }, { status: 404 });
+  }
+
   const stream = await renderToStream(
     <WithdrawalForm 
-      id={params.id} 
-      amount="250.00" 
-      date={new Date().toLocaleDateString()} 
+      id={requisition.id} 
+      amount={requisition.amount} 
+      date={new Date(requisition.created_at).toLocaleDateString()} 
+      title={requisition.title}
+      payee={requisition.profiles?.full_name || 'Unknown'}
+      department={requisition.department_id || 'General'}
     />
   );
 
   return new NextResponse(stream, {
     headers: {
       'Content-Type': 'application/pdf',
-      'Content-Disposition': `attachment; filename="withdrawal-${params.id}.pdf"`,
+      'Content-Disposition': `attachment; filename="withdrawal-${id}.pdf"`,
     },
   });
 }

@@ -1,21 +1,24 @@
-'use client';
-
-import { useState } from 'react';
+import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import { Plus, Search, Filter } from 'lucide-react';
 import Card from '@/components/ui/card';
 import Badge from '@/components/ui/badge';
 import Button from '@/components/ui/button';
 
-export default function RequisitionsPage() {
-  const [filter, setFilter] = useState('all');
+export default async function RequisitionsPage() {
+  const supabase = await createClient();
+  
+  const { data: requisitions, error } = await supabase
+    .from('requisitions')
+    .select(`
+      *,
+      profiles:created_by (full_name)
+    `)
+    .order('created_at', { ascending: false });
 
-  // Mock data
-  const requisitions = [
-    { id: 'REQ-001', title: 'Office Supplies', amount: 250.00, status: 'pending', date: '2025-06-15' },
-    { id: 'REQ-002', title: 'Mission Trip Expenses', amount: 1200.00, status: 'approved', date: '2025-06-12' },
-    { id: 'REQ-003', title: 'Sound Equipment Repair', amount: 450.50, status: 'rejected', date: '2025-06-10' },
-  ];
+  if (error) {
+    console.error('Error fetching requisitions:', error);
+  }
 
   return (
     <div className="space-y-6">
@@ -50,6 +53,7 @@ export default function RequisitionsPage() {
           <thead className="bg-slate-50 text-slate-500">
             <tr>
               <th className="px-6 py-4 font-medium">Reference</th>
+              <th className="px-6 py-4 font-medium">Requested By</th>
               <th className="px-6 py-4 font-medium">Title</th>
               <th className="px-6 py-4 font-medium">Date</th>
               <th className="px-6 py-4 font-medium">Amount</th>
@@ -58,30 +62,39 @@ export default function RequisitionsPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {requisitions.map((req) => (
-              <tr key={req.id} className="hover:bg-slate-50/50">
-                <td className="px-6 py-4 font-medium text-slate-900">{req.id}</td>
-                <td className="px-6 py-4 text-slate-700">{req.title}</td>
-                <td className="px-6 py-4 text-slate-500">{req.date}</td>
-                <td className="px-6 py-4 font-medium text-slate-900">${req.amount.toFixed(2)}</td>
-                <td className="px-6 py-4">
-                  <Badge variant={
-                    req.status === 'approved' ? 'success' : 
-                    req.status === 'rejected' ? 'danger' : 'warning'
-                  }>
-                    {req.status.charAt(0).toUpperCase() + req.status.slice(1)}
-                  </Badge>
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <Link 
-                    href={`/dashboard/requisitions/${req.id}`}
-                    className="text-sm font-medium text-blue-600 hover:text-blue-700"
-                  >
-                    View
-                  </Link>
+            {(!requisitions || requisitions.length === 0) ? (
+              <tr>
+                <td colSpan="7" className="px-6 py-8 text-center text-slate-500">
+                  No requisitions found. Create one to get started.
                 </td>
               </tr>
-            ))}
+            ) : (
+              requisitions.map((req) => (
+                <tr key={req.id} className="hover:bg-slate-50/50">
+                  <td className="px-6 py-4 font-medium text-slate-900 font-mono text-xs">{req.id.slice(0, 8)}...</td>
+                  <td className="px-6 py-4 text-slate-700">{req.profiles?.full_name || 'Unknown'}</td>
+                  <td className="px-6 py-4 text-slate-700">{req.title}</td>
+                  <td className="px-6 py-4 text-slate-500">{new Date(req.created_at).toLocaleDateString()}</td>
+                  <td className="px-6 py-4 font-medium text-slate-900">${req.amount.toFixed(2)}</td>
+                  <td className="px-6 py-4">
+                    <Badge variant={
+                      req.status === 'approved' ? 'success' : 
+                      req.status === 'rejected' ? 'danger' : 'warning'
+                    }>
+                      {req.status.charAt(0).toUpperCase() + req.status.slice(1)}
+                    </Badge>
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <Link 
+                      href={`/dashboard/requisitions/${req.id}`}
+                      className="text-sm font-medium text-blue-600 hover:text-blue-700"
+                    >
+                      View
+                    </Link>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </Card>
