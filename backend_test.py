@@ -213,23 +213,46 @@ def test_dashboard_page():
 
 def main():
     """Main test function"""
-    print("Backend API Testing - PDF Generation Endpoint")
+    print("Backend API Testing - Multiple Endpoints")
     print(f"Test started at: {datetime.now()}")
     print("=" * 60)
     
-    # Test PDF generation endpoint
-    pdf_test_passed = test_pdf_generation_endpoint()
+    # Test results tracking
+    test_results = {}
+    
+    # Test 1: PDF generation endpoint with valid ID
+    print("\n1. Testing PDF Generation Endpoint (Valid ID)")
+    test_results['pdf_valid'] = test_pdf_generation_endpoint()
+    
+    # Test 2: PDF generation endpoint with non-existent ID
+    print("\n2. Testing PDF Generation Endpoint (Non-existent ID)")
+    test_results['pdf_404'] = test_pdf_nonexistent_id()
+    
+    # Test 3: Login page
+    print("\n3. Testing Login Page")
+    test_results['login'] = test_login_page()
+    
+    # Test 4: Dashboard page
+    print("\n4. Testing Dashboard Page")
+    test_results['dashboard'] = test_dashboard_page()
     
     print("\n" + "=" * 60)
     print("FINAL TEST RESULTS:")
     print("=" * 60)
     
-    if pdf_test_passed:
-        print("✅ PDF Generation Endpoint: WORKING")
-        print("\nSUMMARY: All tests passed successfully!")
+    # Display results
+    print("✅ PDF Generation Endpoint (Valid ID):", "WORKING" if test_results['pdf_valid'] else "FAILED")
+    print("✅ PDF Generation Endpoint (404 Test):", "WORKING" if test_results['pdf_404'] else "FAILED")
+    print("✅ Login Page:", "WORKING" if test_results['login'] else "FAILED")
+    print("✅ Dashboard Page:", "WORKING" if test_results['dashboard'] else "FAILED")
+    
+    # Overall summary
+    all_passed = all(test_results.values())
+    if all_passed:
+        print("\n🎉 SUMMARY: All tests passed successfully!")
     else:
-        print("❌ PDF Generation Endpoint: FAILED")
-        print("\nSUMMARY: Some tests failed. Check the output above for details.")
+        failed_tests = [test for test, result in test_results.items() if not result]
+        print(f"\n❌ SUMMARY: {len(failed_tests)} test(s) failed: {', '.join(failed_tests)}")
     
     print(f"Test completed at: {datetime.now()}")
 
