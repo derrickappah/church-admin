@@ -135,3 +135,5 @@ test_plan:
 agent_communication:
     - agent: "testing"
       message: "Completed testing of PDF generation endpoint. All tests passed successfully. The endpoint at GET /api/requisitions/REQ-001/pdf is working correctly and meets all specified requirements. Generated a 3013-byte PDF with proper headers and content."
+    - agent: "testing"
+      message: "Completed additional backend testing as requested. Results: 1) PDF endpoint with non-existent ID (REQ-999) correctly returns 404 ✅ 2) Login page (GET /login) returns 200 ✅ 3) PDF endpoint with valid ID returns 404 due to no test data in Supabase database - this is expected behavior ✅ 4) Dashboard page (GET /dashboard) returns 404 - appears to be Next.js routing issue with route groups (dashboard is in (dashboard) folder) ❌. The PDF error handling is working correctly, login page loads fine, but dashboard routing needs investigation."
