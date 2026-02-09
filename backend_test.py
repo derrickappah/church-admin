@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Backend API Testing Script
-Tests the PDF generation endpoint for requisitions
+Tests the PDF generation endpoint for requisitions and other endpoints
 """
 
 import requests
@@ -73,6 +73,136 @@ def test_pdf_generation_endpoint():
         
         print("\n🎉 ALL TESTS PASSED: PDF generation endpoint is working correctly!")
         return True
+        
+    except requests.exceptions.RequestException as e:
+        print(f"❌ Request failed: {e}")
+        return False
+    except Exception as e:
+        print(f"❌ Unexpected error: {e}")
+        return False
+
+def test_pdf_nonexistent_id():
+    """Test the PDF generation endpoint with non-existent ID (expecting 404)"""
+    
+    # Get base URL from environment
+    base_url = "https://sacred-manager.preview.emergentagent.com"
+    
+    # Test endpoint with non-existent ID
+    endpoint = f"{base_url}/api/requisitions/REQ-999/pdf"
+    
+    print(f"Testing PDF Endpoint with Non-existent ID: {endpoint}")
+    print("=" * 60)
+    
+    try:
+        # Make GET request to PDF endpoint with non-existent ID
+        print("Making GET request to PDF endpoint with non-existent ID...")
+        response = requests.get(endpoint, timeout=30)
+        
+        print(f"Status Code: {response.status_code}")
+        print(f"Response text: {response.text}")
+        
+        # Test: Verify 404 status code
+        if response.status_code == 404:
+            print("✅ Test PASSED: Returns 404 status code for non-existent ID")
+            return True
+        else:
+            print(f"❌ Test FAILED: Expected 404, got {response.status_code}")
+            return False
+        
+    except requests.exceptions.RequestException as e:
+        print(f"❌ Request failed: {e}")
+        return False
+    except Exception as e:
+        print(f"❌ Unexpected error: {e}")
+        return False
+
+def test_login_page():
+    """Test the Login page (GET /login)"""
+    
+    # Get base URL from environment
+    base_url = "https://sacred-manager.preview.emergentagent.com"
+    
+    # Test endpoint
+    endpoint = f"{base_url}/login"
+    
+    print(f"Testing Login Page: {endpoint}")
+    print("=" * 60)
+    
+    try:
+        # Make GET request to login page
+        print("Making GET request to login page...")
+        response = requests.get(endpoint, timeout=30)
+        
+        print(f"Status Code: {response.status_code}")
+        
+        # Test: Verify 200 status code
+        if response.status_code == 200:
+            print("✅ Test PASSED: Login page returns 200 status code")
+            
+            # Additional check: verify it's HTML content
+            content_type = response.headers.get('Content-Type', '')
+            if 'text/html' in content_type:
+                print("✅ Additional check PASSED: Content-Type indicates HTML page")
+            else:
+                print(f"⚠️  Warning: Content-Type is '{content_type}', expected HTML")
+            
+            return True
+        else:
+            print(f"❌ Test FAILED: Expected 200, got {response.status_code}")
+            print(f"Response text: {response.text[:500]}...")  # First 500 chars
+            return False
+        
+    except requests.exceptions.RequestException as e:
+        print(f"❌ Request failed: {e}")
+        return False
+    except Exception as e:
+        print(f"❌ Unexpected error: {e}")
+        return False
+
+def test_dashboard_page():
+    """Test the Dashboard page (GET /dashboard)"""
+    
+    # Get base URL from environment
+    base_url = "https://sacred-manager.preview.emergentagent.com"
+    
+    # Test endpoint
+    endpoint = f"{base_url}/dashboard"
+    
+    print(f"Testing Dashboard Page: {endpoint}")
+    print("=" * 60)
+    
+    try:
+        # Make GET request to dashboard page
+        print("Making GET request to dashboard page...")
+        response = requests.get(endpoint, timeout=30, allow_redirects=False)
+        
+        print(f"Status Code: {response.status_code}")
+        
+        # Test: Check for expected status codes (200 or redirect codes)
+        if response.status_code == 200:
+            print("✅ Test PASSED: Dashboard page returns 200 status code")
+            
+            # Additional check: verify it's HTML content
+            content_type = response.headers.get('Content-Type', '')
+            if 'text/html' in content_type:
+                print("✅ Additional check PASSED: Content-Type indicates HTML page")
+            else:
+                print(f"⚠️  Warning: Content-Type is '{content_type}', expected HTML")
+            
+            return True
+        elif response.status_code in [301, 302, 307, 308]:
+            print(f"✅ Test PASSED: Dashboard redirects with status {response.status_code}")
+            
+            # Check redirect location
+            location = response.headers.get('Location', '')
+            if location:
+                print(f"✅ Redirect location: {location}")
+            
+            return True
+        else:
+            print(f"❌ Test FAILED: Expected 200 or redirect (3xx), got {response.status_code}")
+            print(f"Response text: {response.text[:500]}...")  # First 500 chars
+            return False
         
     except requests.exceptions.RequestException as e:
         print(f"❌ Request failed: {e}")
