@@ -101,3 +101,37 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: "Test the PDF generation endpoint. Endpoint: GET /api/requisitions/REQ-001/pdf. Verify that: 1. It returns a 200 status code. 2. The Content-Type header is 'application/pdf'. 3. The Content-Disposition header contains 'attachment' and the filename."
+
+backend:
+  - task: "PDF Generation Endpoint"
+    implemented: true
+    working: true
+    file: "/app/app/api/requisitions/[id]/pdf/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "PDF generation endpoint tested successfully. All requirements verified: 1) Returns 200 status code ✅ 2) Content-Type header is 'application/pdf' ✅ 3) Content-Disposition header contains 'attachment; filename=withdrawal-REQ-001.pdf' ✅ 4) PDF content is valid (3013 bytes, starts with PDF signature) ✅. Endpoint generates withdrawal forms with hardcoded data and dynamic ID parameter. No database connection required."
+
+frontend: []
+
+metadata:
+  created_by: "testing_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "PDF Generation Endpoint"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    - agent: "testing"
+      message: "Completed testing of PDF generation endpoint. All tests passed successfully. The endpoint at GET /api/requisitions/REQ-001/pdf is working correctly and meets all specified requirements. Generated a 3013-byte PDF with proper headers and content."
