@@ -2,7 +2,7 @@ import React from 'react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-export default function Badge({ children, variant = 'default', className = '' }) {
+export function Badge({ children, variant = 'default', className = '' }) {
   const variants = {
     default: 'bg-slate-100 text-slate-800',
     success: 'bg-green-100 text-green-800',

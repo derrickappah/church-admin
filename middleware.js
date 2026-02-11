@@ -35,8 +35,9 @@ export async function middleware(request) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Protect /dashboard routes
-  if (request.nextUrl.pathname.startsWith('/dashboard')) {
+  // Protect portal routes
+  const protectedRoutes = ['/dashboard', '/reports', '/requisitions', '/approvals', '/withdrawals', '/employees', '/admin']
+  if (protectedRoutes.some(route => request.nextUrl.pathname.startsWith(route))) {
     if (!user) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
