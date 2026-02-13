@@ -167,12 +167,23 @@ export default function LoginPage() {
   const [error, setError] = useState(null)
   const [message, setMessage] = useState(null)
   const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0)
+
+  useEffect(() => {
+    // Set a random initial quote index on mount to avoid hydration mismatch
+    setCurrentQuoteIndex(Math.floor(Math.random() * QUOTES.length))
+  }, [])
   const router = useRouter()
   const supabase = createClient()
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentQuoteIndex((prev) => (prev + 1) % QUOTES.length)
+      setCurrentQuoteIndex((prev) => {
+        let nextIndex
+        do {
+          nextIndex = Math.floor(Math.random() * QUOTES.length)
+        } while (nextIndex === prev && QUOTES.length > 1)
+        return nextIndex
+      })
     }, 5000)
     return () => clearInterval(timer)
   }, [])
