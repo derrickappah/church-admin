@@ -11,6 +11,11 @@ import {
     Settings,
     Shield,
     Building2,
+    ClipboardList,
+    Truck,
+    Wallet,
+    Globe,
+    CreditCard
 } from 'lucide-react';
 
 const iconMap = {
@@ -22,9 +27,14 @@ const iconMap = {
     Settings,
     Shield,
     Building2,
+    ClipboardList,
+    Truck,
+    Wallet,
+    Globe,
+    CreditCard
 };
 
-export default function NavLink({ href, icon, children }) {
+export default function NavLink({ href, icon, children, isCollapsed = false }) {
     const pathname = usePathname();
     const isActive = pathname === href || (href !== '/dashboard' && pathname.startsWith(href));
     const Icon = iconMap[icon];
@@ -32,13 +42,14 @@ export default function NavLink({ href, icon, children }) {
     return (
         <Link
             href={href}
-            className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${isActive
+            title={isCollapsed ? children : ''}
+            className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} rounded-md px-3 py-2 text-sm font-medium transition-colors ${isActive
                 ? 'bg-blue-50 text-blue-600'
                 : 'text-slate-700 hover:bg-slate-100 hover:text-blue-600'
                 }`}
         >
             {Icon && <Icon className="h-4 w-4" />}
-            {children}
+            {!isCollapsed && children}
         </Link>
     );
 }

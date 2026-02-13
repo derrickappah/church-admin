@@ -12,19 +12,46 @@ export default async function RequisitionDetailPage({ params }) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    const { data: requisition, error } = await supabase
+    const { data: requisition, error: reqError } = await supabase
         .from('requisitions')
-        .select(`
-      *,
-      profiles:created_by (full_name, role),
-      approver:approved_by (full_name)
-    `)
+        .select('*')
         .eq('id', id)
         .single();
 
-    if (error || !requisition) {
-        notFound();
+    if (reqError || !requisition) {
+        return (
+            <div className="p-6">
+                <div className="bg-red-50 border border-red-200 rounded-md p-4">
+                    <h3 className="text-lg font-medium text-red-800">Error Loading Requisition</h3>
+                    <p className="text-sm text-red-600 mt-2">ID: {id}</p>
+                    <p className="text-sm text-red-600">Error: {reqError ? JSON.stringify(reqError) : 'Requisition not found (null data)'}</p>
+                </div>
+            </div>
+        );
     }
+
+    // Fetch related profiles manually since foreign keys point to auth.users
+    const { data: createdByProfile } = await supabase
+        .from('profiles')
+        .select('full_name, role')
+        .eq('id', requisition.created_by)
+        .single();
+
+    let approverProfile = null;
+    if (requisition.approved_by) {
+        const { data: approver } = await supabase
+            .from('profiles')
+            .select('full_name')
+            .eq('id', requisition.approved_by)
+            .single();
+        approverProfile = approver;
+    }
+
+    // Attach to requisition object to match expected structure
+    requisition.profiles = createdByProfile;
+    requisition.approver = approverProfile;
+
+
 
     const { data: profile } = await supabase
         .from('profiles')

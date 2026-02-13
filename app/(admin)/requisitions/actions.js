@@ -50,20 +50,54 @@ export async function approveRequisition(id) {
     if (error) throw new Error(error.message)
 
     // 2. Fetch the newly created withdrawal form
+    // 2. Fetch the newly created withdrawal form without complex joins
     const { data: form, error: formError } = await supabase
         .from('withdrawal_forms')
-        .select(`
-            *,
-            requisitions (title, profiles:created_by (full_name)),
-            generator:generated_by (full_name)
-        `)
+        .select('*')
         .eq('requisition_id', id)
         .single()
 
     if (form && !formError) {
         try {
+            // Manually fetch related data needed for PDF
+            const { data: requisition } = await supabase
+                .from('requisitions')
+                .select('title, created_by')
+                .eq('id', id)
+                .single();
+
+            let creatorName = 'Unknown';
+            if (requisition?.created_by) {
+                const { data: creator } = await supabase
+                    .from('profiles')
+                    .select('full_name')
+                    .eq('id', requisition.created_by)
+                    .single();
+                creatorName = creator?.full_name || 'Unknown';
+            }
+
+            let generatorName = 'Unknown';
+            if (form.generated_by) {
+                const { data: generator } = await supabase
+                    .from('profiles')
+                    .select('full_name')
+                    .eq('id', form.generated_by)
+                    .single();
+                generatorName = generator?.full_name || 'Unknown';
+            }
+
+            // Construct the object structure expected by generateWithdrawalPDFBuffer
+            const flowForm = {
+                ...form,
+                requisitions: {
+                    title: requisition?.title,
+                    profiles: { full_name: creatorName }
+                },
+                generator: { full_name: generatorName }
+            };
+
             // 3. Generate PDF Buffer
-            const buffer = await generateWithdrawalPDFBuffer(form)
+            const buffer = await generateWithdrawalPDFBuffer(flowForm)
 
             // 4. Upload to Storage
             const fileName = `${form.reference_number}.pdf`

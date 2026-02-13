@@ -8,13 +8,34 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 export default async function RequisitionsPage() {
     const supabase = await createClient();
 
-    const { data: requisitions, error } = await supabase
+    const { data: requisitionsData, error } = await supabase
         .from('requisitions')
-        .select(`
-      *,
-      profiles:created_by (full_name)
-    `)
+        .select('*')
         .order('created_at', { ascending: false });
+
+    // Manually fetch profiles for the creators
+    let requisitions = requisitionsData || [];
+
+    if (requisitions.length > 0) {
+        const userIds = [...new Set(requisitions.map(r => r.created_by).filter(Boolean))];
+
+        if (userIds.length > 0) {
+            const { data: profiles } = await supabase
+                .from('profiles')
+                .select('id, full_name')
+                .in('id', userIds);
+
+            const profileMap = (profiles || []).reduce((acc, profile) => {
+                acc[profile.id] = profile;
+                return acc;
+            }, {});
+
+            requisitions = requisitions.map(req => ({
+                ...req,
+                profiles: profileMap[req.created_by] || null
+            }));
+        }
+    }
 
     if (error) {
         console.error('Error fetching requisitions:', error);
