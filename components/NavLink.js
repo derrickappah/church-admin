@@ -15,7 +15,12 @@ import {
     Truck,
     Wallet,
     Globe,
-    CreditCard
+    CreditCard,
+    FileCheck,
+    GraduationCap,
+    School,
+    BookOpen,
+    Receipt
 } from 'lucide-react';
 
 const iconMap = {
@@ -31,7 +36,12 @@ const iconMap = {
     Truck,
     Wallet,
     Globe,
-    CreditCard
+    CreditCard,
+    FileCheck,
+    GraduationCap,
+    School,
+    BookOpen,
+    Receipt
 };
 
 export default function NavLink({ href, icon, children, isCollapsed = false }) {

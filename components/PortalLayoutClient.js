@@ -53,6 +53,11 @@ export default function PortalLayoutClient({ children, profile, userInitials, us
                         <NavLink href="/dashboard" icon="LayoutDashboard" isCollapsed={isCollapsed}>Dashboard</NavLink>
                         <NavLink href="/reports/missions" icon="Globe" isCollapsed={isCollapsed}>Mission Reports</NavLink>
                         <NavLink href="/reports/move" icon="Truck" isCollapsed={isCollapsed}>Move Reports</NavLink>
+                        <NavLink href="/reports/mcp" icon="FileCheck" isCollapsed={isCollapsed}>MCP Reports</NavLink>
+                        <NavLink href="/reports/financial" icon="Receipt" isCollapsed={isCollapsed}>Financial Reports</NavLink>
+                        <NavLink href="/reports/gtvet" icon="GraduationCap" isCollapsed={isCollapsed}>GTVET Reports</NavLink>
+                        <NavLink href="/reports/adidome-vocational" icon="School" isCollapsed={isCollapsed}>Vocational School</NavLink>
+                        <NavLink href="/reports/adidome-preparatory" icon="BookOpen" isCollapsed={isCollapsed}>Preparatory School</NavLink>
                         <NavLink href="/reports/departments" icon="ClipboardList" isCollapsed={isCollapsed}>Dept Reports</NavLink>
                         <NavLink href="/requisitions" icon="DollarSign" isCollapsed={isCollapsed}>Requisitions</NavLink>
                         {isAdmin && (
