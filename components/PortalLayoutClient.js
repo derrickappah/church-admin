@@ -7,7 +7,8 @@ import {
     Menu,
     ChevronLeft,
     ChevronRight,
-    ClipboardList
+    ClipboardList,
+    X
 } from 'lucide-react';
 
 export default function PortalLayoutClient({ children, profile, userInitials, userName }) {
@@ -15,6 +16,7 @@ export default function PortalLayoutClient({ children, profile, userInitials, us
     const [isMounted, setIsMounted] = useState(false);
 
     const [isReportsExpanded, setIsReportsExpanded] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     useEffect(() => {
         setIsMounted(true);
@@ -42,17 +44,34 @@ export default function PortalLayoutClient({ children, profile, userInitials, us
         localStorage.setItem('sidebarReportsExpanded', JSON.stringify(newState));
     };
 
+    const toggleMobileMenu = () => {
+        setIsMobileMenuOpen(!isMobileMenuOpen);
+    };
+
+    const closeMobileMenu = () => {
+        setIsMobileMenuOpen(false);
+    };
+
     const isAdmin = ['president', 'manager', 'it_staff'].includes(profile?.role);
 
     return (
         <div className="flex min-h-screen bg-slate-50">
+            {/* Mobile Sidebar Overlay */}
+            {isMobileMenuOpen && (
+                <div
+                    className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm md:hidden transition-opacity duration-300"
+                    onClick={closeMobileMenu}
+                />
+            )}
+
             {/* Sidebar */}
-            <aside className={`fixed inset-y-0 left-0 z-50 ${isCollapsed ? 'w-16' : 'w-64'} border-r border-slate-200 bg-white shadow-sm hidden md:block transition-all duration-300`}>
+            <aside className={`fixed inset-y-0 left-0 z-[60] ${isCollapsed ? 'w-16' : 'w-64'} border-r border-slate-200 bg-white shadow-xl md:shadow-sm transition-all duration-300 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
                 <div className="flex h-16 items-center justify-between border-b border-slate-200 px-4">
                     {!isCollapsed && <span className="text-lg font-bold text-blue-900 uppercase tracking-tight">Church Admin</span>}
+                    {/* Desktop Toggle */}
                     <button
                         onClick={toggleSidebar}
-                        className="flex items-center justify-center h-8 w-8 rounded-md hover:bg-slate-100 transition-colors ml-auto"
+                        className="hidden md:flex items-center justify-center h-8 w-8 rounded-md hover:bg-slate-100 transition-colors ml-auto"
                         title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
                     >
                         {isCollapsed ? (
@@ -61,10 +80,18 @@ export default function PortalLayoutClient({ children, profile, userInitials, us
                             <ChevronLeft className="h-5 w-5 text-slate-500" />
                         )}
                     </button>
+
+                    {/* Mobile Close Button */}
+                    <button
+                        onClick={closeMobileMenu}
+                        className="flex md:hidden items-center justify-center h-8 w-8 rounded-md hover:bg-slate-100 transition-colors ml-auto"
+                    >
+                        <X className="h-5 w-5 text-slate-500" />
+                    </button>
                 </div>
 
                 <div className="px-3 py-4 overflow-y-auto max-h-[calc(100vh-120px)] scrollbar-hide">
-                    <nav className="space-y-1">
+                    <nav className="space-y-1" onClick={() => { if (window.innerWidth < 768) closeMobileMenu(); }}>
                         <NavLink href="/dashboard" icon="LayoutDashboard" isCollapsed={isCollapsed}>Dashboard</NavLink>
 
                         {/* Grouped Reports */}
@@ -130,7 +157,10 @@ export default function PortalLayoutClient({ children, profile, userInitials, us
             <main className={`flex-1 ${isCollapsed ? 'md:pl-16' : 'md:pl-64'} transition-all duration-300`}>
                 <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-slate-200 bg-white px-6 shadow-sm">
                     <div className="flex items-center gap-4">
-                        <button className="md:hidden">
+                        <button
+                            onClick={toggleMobileMenu}
+                            className="md:hidden flex items-center justify-center h-10 w-10 rounded-md hover:bg-slate-100 transition-colors"
+                        >
                             <Menu className="h-6 w-6 text-slate-500" />
                         </button>
                         <h1 className="text-lg font-semibold text-slate-900 leading-none">Church Management</h1>
