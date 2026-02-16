@@ -97,7 +97,10 @@ export default function PortalLayoutClient({ children, profile, userInitials, us
                         {/* Grouped Reports */}
                         <div>
                             <button
-                                onClick={toggleReports}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleReports();
+                                }}
                                 className={`flex w-full items-center ${isCollapsed ? 'justify-center' : 'justify-between'} rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-blue-600 transition-colors group`}
                                 title={isCollapsed ? 'Reports' : ''}
                             >
