@@ -32,6 +32,11 @@ export default async function DashboardPage() {
         { id: 'active', label: 'Active Employees', icon: Users, color: 'text-blue-600', bg: 'bg-blue-100', query: supabase.from('employees').select('*', { count: 'exact', head: true }).eq('status', 'active') },
         { id: 'missions', label: 'Mission Reports', query: supabase.from('missions_reports').select('*', { count: 'exact', head: true }).eq('status', 'approved') },
         { id: 'move', label: 'Move Reports', query: supabase.from('move_reports').select('*', { count: 'exact', head: true }).eq('status', 'approved') },
+        { id: 'mcp', label: 'MCP Reports', query: supabase.from('mcp_reports').select('*', { count: 'exact', head: true }).eq('status', 'approved') },
+        { id: 'financial', label: 'Financial Reports', query: supabase.from('financial_reports').select('*', { count: 'exact', head: true }).eq('status', 'approved') },
+        { id: 'gtvet', label: 'GTVET Reports', query: supabase.from('gtvet_reports').select('*', { count: 'exact', head: true }).eq('status', 'approved') },
+        { id: 'vocational', label: 'Vocational Reports', query: supabase.from('adidome_vocational_reports').select('*', { count: 'exact', head: true }).eq('status', 'approved') },
+        { id: 'preparatory', label: 'Preparatory Reports', query: supabase.from('adidome_preparatory_reports').select('*', { count: 'exact', head: true }).eq('status', 'approved') },
         { id: 'dept', label: 'Dept Reports', query: supabase.from('department_reports').select('*', { count: 'exact', head: true }).eq('status', 'approved') },
         { id: 'disbursed', label: 'Total Disbursed', icon: DollarSign, color: 'text-purple-600', bg: 'bg-purple-100', query: supabase.from('requisitions').select('amount').eq('status', 'approved') },
     ];
@@ -50,6 +55,11 @@ export default async function DashboardPage() {
             { count: employeesCount },
             { count: missionCount },
             { count: moveCount },
+            { count: mcpCount },
+            { count: financialCount },
+            { count: gtvetCount },
+            { count: vocationalCount },
+            { count: preparatoryCount },
             { count: deptCount },
             { data: disbursedData },
             { data: recentReqs }
@@ -60,13 +70,18 @@ export default async function DashboardPage() {
             stats[3].query,
             stats[4].query,
             stats[5].query,
+            stats[6].query,
+            stats[7].query,
+            stats[8].query,
+            stats[9].query,
+            stats[10].query,
             supabase.from('requisitions').select('id, title, status, created_at, profiles:created_by (full_name)').order('created_at', { ascending: false }).limit(5)
         ]);
 
         dashboardData = {
             pendingRequisitions: pendingCount || 0,
             activeEmployees: employeesCount || 0,
-            approvedReportsCount: (missionCount || 0) + (moveCount || 0) + (deptCount || 0),
+            approvedReportsCount: (missionCount || 0) + (moveCount || 0) + (mcpCount || 0) + (financialCount || 0) + (gtvetCount || 0) + (vocationalCount || 0) + (preparatoryCount || 0) + (deptCount || 0),
             totalDisbursed: disbursedData?.reduce((sum, req) => sum + parseFloat(req.amount || 0), 0) || 0,
             recentRequisitions: recentReqs || []
         };
@@ -136,14 +151,15 @@ export default async function DashboardPage() {
                             </div>
                             <span className="text-sm font-semibold text-slate-700">New Requisition</span>
                         </Link>
-                        <Link href="/reports/missions/create" className="flex flex-col items-center justify-center gap-3 rounded-xl border border-slate-200 p-6 hover:bg-green-50 hover:border-green-200 transition-all group">
+                        <Link href="/reports" className="flex flex-col items-center justify-center gap-3 rounded-xl border border-slate-200 p-6 hover:bg-green-50 hover:border-green-200 transition-all group">
                             <div className="rounded-full bg-green-100 p-3 group-hover:bg-green-200 transition-colors">
                                 <FileText className="h-6 w-6 text-green-600" />
                             </div>
-                            <span className="text-sm font-semibold text-slate-700">Submit Report</span>
+                            <span className="text-sm font-semibold text-slate-700">Reports Hub</span>
                         </Link>
                     </div>
                 </div>
+
             </div>
         </div>
     );
