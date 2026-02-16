@@ -6,12 +6,15 @@ import {
     LogOut,
     Menu,
     ChevronLeft,
-    ChevronRight
+    ChevronRight,
+    ClipboardList
 } from 'lucide-react';
 
 export default function PortalLayoutClient({ children, profile, userInitials, userName }) {
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
+
+    const [isReportsExpanded, setIsReportsExpanded] = useState(false);
 
     useEffect(() => {
         setIsMounted(true);
@@ -19,12 +22,24 @@ export default function PortalLayoutClient({ children, profile, userInitials, us
         if (savedState !== null) {
             setIsCollapsed(JSON.parse(savedState));
         }
+
+        // Also load reports expanded state
+        const savedReportsState = localStorage.getItem('sidebarReportsExpanded');
+        if (savedReportsState !== null) {
+            setIsReportsExpanded(JSON.parse(savedReportsState));
+        }
     }, []);
 
     const toggleSidebar = () => {
         const newState = !isCollapsed;
         setIsCollapsed(newState);
         localStorage.setItem('sidebarCollapsed', JSON.stringify(newState));
+    };
+
+    const toggleReports = () => {
+        const newState = !isReportsExpanded;
+        setIsReportsExpanded(newState);
+        localStorage.setItem('sidebarReportsExpanded', JSON.stringify(newState));
     };
 
     const isAdmin = ['president', 'manager', 'it_staff'].includes(profile?.role);
@@ -48,17 +63,41 @@ export default function PortalLayoutClient({ children, profile, userInitials, us
                     </button>
                 </div>
 
-                <div className="px-3 py-4">
+                <div className="px-3 py-4 overflow-y-auto max-h-[calc(100vh-120px)]">
                     <nav className="space-y-1">
                         <NavLink href="/dashboard" icon="LayoutDashboard" isCollapsed={isCollapsed}>Dashboard</NavLink>
-                        <NavLink href="/reports/missions" icon="Globe" isCollapsed={isCollapsed}>Mission Reports</NavLink>
-                        <NavLink href="/reports/move" icon="Truck" isCollapsed={isCollapsed}>Move Reports</NavLink>
-                        <NavLink href="/reports/mcp" icon="FileCheck" isCollapsed={isCollapsed}>MCP Reports</NavLink>
-                        <NavLink href="/reports/financial" icon="Receipt" isCollapsed={isCollapsed}>Financial Reports</NavLink>
-                        <NavLink href="/reports/gtvet" icon="GraduationCap" isCollapsed={isCollapsed}>GTVET Reports</NavLink>
-                        <NavLink href="/reports/adidome-vocational" icon="School" isCollapsed={isCollapsed}>Vocational School</NavLink>
-                        <NavLink href="/reports/adidome-preparatory" icon="BookOpen" isCollapsed={isCollapsed}>Preparatory School</NavLink>
-                        <NavLink href="/reports/departments" icon="ClipboardList" isCollapsed={isCollapsed}>Dept Reports</NavLink>
+
+                        {/* Grouped Reports */}
+                        <div>
+                            <button
+                                onClick={toggleReports}
+                                className={`flex w-full items-center ${isCollapsed ? 'justify-center' : 'justify-between'} rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-blue-600 transition-colors group`}
+                                title={isCollapsed ? 'Reports' : ''}
+                            >
+                                <div className={`flex items-center ${isCollapsed ? '' : 'gap-3'}`}>
+                                    <ClipboardList className="h-4 w-4" />
+                                    {!isCollapsed && <span>Reports</span>}
+                                </div>
+                                {!isCollapsed && (
+                                    <ChevronRight className={`h-4 w-4 transition-transform duration-200 ${isReportsExpanded ? 'rotate-90' : ''}`} />
+                                )}
+                            </button>
+
+                            {(isReportsExpanded || isCollapsed) && !isCollapsed && (
+                                <div className="mt-1 space-y-1">
+                                    <NavLink href="/reports" icon="LayoutDashboard" isCollapsed={isCollapsed} isSubLink>Overview</NavLink>
+                                    <NavLink href="/reports/missions" icon="Globe" isCollapsed={isCollapsed} isSubLink>Missions</NavLink>
+                                    <NavLink href="/reports/move" icon="Truck" isCollapsed={isCollapsed} isSubLink>Movements</NavLink>
+                                    <NavLink href="/reports/mcp" icon="FileCheck" isCollapsed={isCollapsed} isSubLink>MCP</NavLink>
+                                    <NavLink href="/reports/financial" icon="Receipt" isCollapsed={isCollapsed} isSubLink>Financial</NavLink>
+                                    <NavLink href="/reports/gtvet" icon="GraduationCap" isCollapsed={isCollapsed} isSubLink>GTVET</NavLink>
+                                    <NavLink href="/reports/adidome-vocational" icon="School" isCollapsed={isCollapsed} isSubLink>Vocational</NavLink>
+                                    <NavLink href="/reports/adidome-preparatory" icon="BookOpen" isCollapsed={isCollapsed} isSubLink>Preparatory</NavLink>
+                                    <NavLink href="/reports/departments" icon="ClipboardList" isCollapsed={isCollapsed} isSubLink>Departments</NavLink>
+                                </div>
+                            )}
+                        </div>
+
                         <NavLink href="/requisitions" icon="DollarSign" isCollapsed={isCollapsed}>Requisitions</NavLink>
                         {isAdmin && (
                             <NavLink href="/approvals" icon="CheckSquare" isCollapsed={isCollapsed}>Approvals</NavLink>
