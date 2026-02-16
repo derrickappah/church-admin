@@ -63,7 +63,7 @@ export default function PortalLayoutClient({ children, profile, userInitials, us
                     </button>
                 </div>
 
-                <div className="px-3 py-4 overflow-y-auto max-h-[calc(100vh-120px)]">
+                <div className="px-3 py-4 overflow-y-auto max-h-[calc(100vh-120px)] scrollbar-hide">
                     <nav className="space-y-1">
                         <NavLink href="/dashboard" icon="LayoutDashboard" isCollapsed={isCollapsed}>Dashboard</NavLink>
 
